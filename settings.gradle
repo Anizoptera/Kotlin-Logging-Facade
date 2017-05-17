@@ -6,5 +6,8 @@ project(":kotlog").projectDir = file("modules/kotlog")
 include ":kotlog-console"
 project(":kotlog-console").projectDir = file("modules/kotlog-console")
 
+include ":kotlog-slf4j"
+project(":kotlog-slf4j").projectDir = file("modules/kotlog-slf4j")
+
 include ":kotlog-android"
 project(":kotlog-android").projectDir = file("modules/kotlog-android")
