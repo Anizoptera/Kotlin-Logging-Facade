@@ -1,0 +1,10 @@
+rootProject.name = "Kotlin-Logging-Facade"
+
+include ":kotlog"
+project(":kotlog").projectDir = file("modules/kotlog")
+
+include ":kotlog-console"
+project(":kotlog-console").projectDir = file("modules/kotlog-console")
+
+include ":kotlog-android"
+project(":kotlog-android").projectDir = file("modules/kotlog-android")
