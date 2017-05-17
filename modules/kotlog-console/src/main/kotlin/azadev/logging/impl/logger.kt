@@ -1,4 +1,6 @@
 package azadev.logging.impl
 
+import azadev.logging.LoggingAdapter
 
-@JvmField var LOGGER_INSTANCE = ConsoleLoggingAdapter()
+
+@JvmField var LOGGING_ADAPTER: LoggingAdapter = ConsoleLoggingAdapter()

@@ -10,7 +10,7 @@ import com.crashlytics.android.Crashlytics
 
 
 @Suppress("unused")
-@JvmField var LOGGER_INSTANCE = AndroidLoggingAdapter()
+@JvmField var LOGGING_ADAPTER: LoggingAdapter = AndroidLoggingAdapter()
 
 
 /**
@@ -21,21 +21,20 @@ import com.crashlytics.android.Crashlytics
  * @link https://github.com/pawegio/KAndroid/blob/master/kandroid/src/main/java/com/pawegio/kandroid/KLog.kt
  */
 class AndroidLoggingAdapter(
-		@JvmField val TEST: Boolean = false,
-		@JvmField val MAX_DEBUG: Boolean = false,
-		@JvmField val REPORT_CRASHES: Boolean = false
+		override var level: Int = LogLevel.ALL,
+		var productionMode: Boolean = false,
+		var reportCrashes: Boolean = false
 ) : LoggingAdapter()
 {
 	companion object
 	{
-		const val RELEASE_LOGGING = false
+		// Internal field for testing purposes
+		private const val RELEASE_LOGGING = false
 
 		const val MAX_LOG_TAG_LENGTH = 23
 		const val MAX_LOG_LENGTH = 4000
 	}
 
-
-	override val level: Int = if (TEST) LogLevel.ALL else LogLevel.DEBUG
 
 	override fun log(tag: Any?, level: Int, msg: CharSequence?, t: Throwable?, args: Array<out Any>) {
 		if (isNotLoggable(level))
@@ -47,7 +46,7 @@ class AndroidLoggingAdapter(
 
 		// Notify Crashlytics about exceptions immediately
 		// It may be important for OutOfMemory errors and similar
-		if (REPORT_CRASHES && level >= (if (ex == null && t == null) ERROR else WARN)) {
+		if (reportCrashes && level >= (if (ex == null && t == null) ERROR else WARN)) {
 			var e = ex
 			if (e == null || message.isNotEmpty()) {
 				e = if (level >= ASSERT)
@@ -82,31 +81,30 @@ class AndroidLoggingAdapter(
 
 		// Send important logs to Crashlytics
 		val priority = androidLogLevel(level)
-		if (REPORT_CRASHES && level >= DEBUG) {
+		if (reportCrashes && level >= DEBUG) {
 			try { Crashlytics.log(priority, simpleTag, messageFull) }
 			catch (ignored: Exception) {}
 		}
 
 		// Don't bother logging in release builds if not enabled explicitly
-		val TEST = TEST
-		if (RELEASE_LOGGING || TEST)
+		if (!productionMode || RELEASE_LOGGING)
 			// Add special tag mark for easy filtration
 			androidLog(priority, LOG_MARK + simpleTag, messageFull)
 
-		// Show toast with warning/error
-		if (TEST && level >= if (MAX_DEBUG) WARN else ERROR)
-			try {
-				val sb = StringBuilder(message.length + simpleTag.length + 3)
-				sb.append(logLevelLetter(level)).append('/')
-						.append(simpleTag).append(':').append(' ').append(message)
-
+		// Show toast (is usually used as an explicit notice about warnings and errors)
+//		if (SHOW_TOAST_FROM_LEVEL)
+//			try {
+//				val sb = StringBuilder(message.length + simpleTag.length + 3)
+//				sb.append(logLevelLetter(level)).append('/')
+//						.append(simpleTag).append(':').append(' ').append(message)
+//
 //				ctx.toastLong(sb)
-			}
-			catch (ignored: Exception) {}
+//			}
+//			catch (ignored: Exception) {}
 	}
 
 	override fun logErrorOrThrow(tag: Any?, msg: CharSequence?, t: Throwable?, args: Array<out Any>) {
-		if (TEST) {
+		if (!productionMode) {
 			val ex = prepareException(tag, t, args)
 			val message = prepareMessage(ex, msg, args)
 			throw sanitizeStackTrace(IllegalStateException("${prepareTag(tag)} Error: $message", ex))

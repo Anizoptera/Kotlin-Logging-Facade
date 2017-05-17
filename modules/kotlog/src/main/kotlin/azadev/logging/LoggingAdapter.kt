@@ -18,7 +18,7 @@ abstract class LoggingAdapter
 {
 	companion object
 	{
-		const val LOG_TAG = "Logger"
+		const val LOG_TAG = "KotLog"
 
 		/** Special mark for easy filtration */
 		const val LOG_MARK = "[L]"
@@ -33,9 +33,13 @@ abstract class LoggingAdapter
 	}
 
 
-	open val level: Int get() = LogLevel.ALL
+	open var level: Int = LogLevel.ALL
+
 
 	@JvmField val locale = Locale.US!!
+
+	protected val logTime: String
+		get() = SimpleDateFormat("mm:ss.SSS", locale).format(Date())!!
 
 
 	fun isLoggable(level: Int) = level >= this.level
@@ -76,9 +80,6 @@ abstract class LoggingAdapter
 
 
 
-	protected val logTime: String
-		get() = SimpleDateFormat("mm:ss.SSS", locale).format(Date())!!
-
 	protected fun logLevelLetter(priority: Int): String {
 		return when (priority) {
 			LogLevel.TRACE -> 'T'
@@ -110,35 +111,35 @@ abstract class LoggingAdapter
 	}
 
 	protected fun prepareTag(tag: Any?): String {
-		// Prepare tag
-		var simpleTag: String? = (tag as? CharSequence)?.toString() ?: if (tag != null) tag.javaClass.simpleName else null
-		if (simpleTag == null) {
-			// DO NOT switch this to Thread.getCurrentThread().getStackTrace(). The test will pass
-			// because Robolectric runs them on the JVM but on Android the elements are different.
-			val stackTrace = Throwable().stackTrace
-			val firstGoodIndex = indexOfTraceStart(stackTrace, LOGGER_CLASS_NAME)
-			simpleTag = stackTrace[firstGoodIndex].createTag()
+		return when (tag) {
+			is CharSequence -> tag.toString()
+			null -> {
+				// DO NOT switch this to Thread.getCurrentThread().getStackTrace(). The test will pass
+				// because Robolectric runs them on the JVM, but on Android the elements are different.
+				val stackTrace = Throwable().stackTrace
+				val firstGoodIndex = indexOfTraceStart(stackTrace, LOGGER_CLASS_NAME)
+				stackTrace[firstGoodIndex].createTag()
+			}
+			else -> tag.javaClass.simpleName
 		}
-		return simpleTag
 	}
 
 	protected fun prepareMessage(t: Throwable?, msg: CharSequence?, args: Array<out Any>): CharSequence? {
-		var m = msg
-		if (m == null || m.isEmpty()) {
-			if (t != null)
-				m = t.message
-		}
-		else if (args.isNotEmpty()) {
-			try { m = java.lang.String.format(locale, m.toString(), *args) }
-			catch (e: Exception) {
-				if (t != null && e.cause == null)
-					e.initCause(t)
+		when {
+			msg == null || msg.isEmpty() -> return t?.message
+			args.isNotEmpty() -> {
+				try { return java.lang.String.format(locale, msg.toString(), *args) }
+				catch (e: Exception) {
+					if (t != null && e.cause == null)
+						e.initCause(t)
 
-				m = "$m; FORMAT ERROR: ${e.message}; ARGS: ${Arrays.toString(args)}"
-				logErrorOrThrow(LOG_TAG, m, e, EMPTY_OBJECT_ARRAY)
+					val m = "$msg; FORMAT ERROR: ${e.message}; ARGS: ${Arrays.toString(args)}"
+					logErrorOrThrow(LOG_TAG, m, e, EMPTY_OBJECT_ARRAY)
+					return m
+				}
 			}
 		}
-		return m
+		return msg
 	}
 
 
@@ -147,7 +148,7 @@ abstract class LoggingAdapter
 		var i = 0
 		val length = stackTrace.size
 		while (i < length) {
-			if (classNameToDrop.equals(stackTrace[i].className))
+			if (classNameToDrop == stackTrace[i].className)
 				lastIntrinsic = i
 			i++
 		}
@@ -155,9 +156,9 @@ abstract class LoggingAdapter
 	}
 
 	/**
-	 * Extract the tag which should be used for the message from the `element`.
-	 * Will use the class name without any anonymous class suffixes (e.g., `Foo$1`
-	 * becomes `Foo`).
+	 * Extracts the tag which should be used for the log message.
+	 * Will use the class name without any anonymous class suffixes
+	 * (e.g., `Foo$1` becomes `Foo`).
 	 *
 	 * @see timber.log.Timber.DebugTree.createStackElementTag
 	 */

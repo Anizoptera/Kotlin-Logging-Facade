@@ -2,6 +2,7 @@ package azadev.logging.impl
 
 
 /*
-Just an example of definig a Logger instance.
+Just an example of definig an Adapter instance.
  */
-// val LOGGER_INSTANCE = ConsoleLogger()
+//@Suppress("unused")
+// val LOGGING_ADAPTER = ConsoleLogger()

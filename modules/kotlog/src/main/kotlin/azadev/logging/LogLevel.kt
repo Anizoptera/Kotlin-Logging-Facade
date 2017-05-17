@@ -27,8 +27,6 @@ object LogLevel
 	 * to end users and to system administrators.
 	 *
 	 * This level is initialized to _1100_
-	 *
-	 * @see android.util.Log.ASSERT
 	 */
 	const val ASSERT = 1100
 

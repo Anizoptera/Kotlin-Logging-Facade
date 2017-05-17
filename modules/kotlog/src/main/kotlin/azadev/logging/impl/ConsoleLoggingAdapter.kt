@@ -7,16 +7,11 @@ import java.io.StringWriter
 /**
  * Appends log events to [System.out] or [System.err].
  */
-class ConsoleLoggingAdapter : LoggingAdapter()
+class ConsoleLoggingAdapter(
+		override var level: Int = LogLevel.ALL,
+		var useStderrFrom: Int = LogLevel.WARN
+) : LoggingAdapter()
 {
-	companion object {
-		const val MIN_LOG_LEVEL = LogLevel.WARN
-	}
-
-
-	override val level get() = MIN_LOG_LEVEL
-
-
 	override fun log(tag: Any?, level: Int, msg: CharSequence?, t: Throwable?, args: Array<out Any>) {
 		if (isNotLoggable(level))
 			return
@@ -30,10 +25,16 @@ class ConsoleLoggingAdapter : LoggingAdapter()
 
 		val sw = StringWriter(128)
 		sw.append(logTime).append(' ')
-				.append(logLevelLetter(level)).append('/')
-				.append(markedTag).append(' ').append(message)
+		sw.append(logLevelLetter(level)).append('/')
+		sw.append(markedTag).append(':').append(' ')
+		sw.append(message)
 		if (ex != null) sw.append('\n').appendStackTrace(ex)
-		System.err.println(sw.toString())
+
+		val m = sw.toString()
+		if (level >= useStderrFrom)
+			System.err.println(m)
+		else
+			System.out.println(m)
 	}
 
 	override fun logErrorOrThrow(tag: Any?, msg: CharSequence?, t: Throwable?, args: Array<out Any>) {
