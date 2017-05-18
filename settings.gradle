@@ -1,7 +1,8 @@
 rootProject.name = "Kotlin-Logging-Facade"
 
-include ":kotlog"
+include ":kotlog", ":kotlog_stub"
 project(":kotlog").projectDir = file("modules/kotlog")
+project(":kotlog_stub").projectDir = file("modules/kotlog_stub")
 
 include ":kotlog-console"
 project(":kotlog-console").projectDir = file("modules/kotlog-console")
