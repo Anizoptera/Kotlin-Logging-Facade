@@ -12,6 +12,10 @@ buildscript {
 	}
 }
 
+allprojects {
+	ext.kotlin_version = rootProject.ext.kotlin_version
+}
+
 apply plugin: "kotlin"
 
 repositories {
