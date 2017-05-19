@@ -21,3 +21,10 @@ repositories {
 dependencies {
 	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
+
+
+// PUBLISHING
+
+task jar_source(type: Jar) {
+	from sourceSets.main.allSource
+}

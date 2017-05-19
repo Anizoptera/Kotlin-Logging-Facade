@@ -26,3 +26,10 @@ dependencies {
 
 	compile project(":kotlog")
 }
+
+
+// PUBLISHING
+
+task jar_source(type: Jar) {
+	from sourceSets.main.allSource
+}

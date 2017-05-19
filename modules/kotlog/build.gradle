@@ -23,3 +23,10 @@ dependencies {
 
 	compileOnly project(":kotlog_stub")
 }
+
+
+// PUBLISHING
+
+task jar_source(type: Jar) {
+	from sourceSets.main.allSource
+}

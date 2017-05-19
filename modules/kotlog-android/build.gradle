@@ -14,13 +14,6 @@ buildscript {
 
 apply plugin: "kotlin"
 
-configurations {
-	provided
-}
-sourceSets {
-	main { compileClasspath += configurations.provided }
-}
-
 repositories {
 	jcenter()
 }
@@ -28,10 +21,17 @@ repositories {
 dependencies {
 	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
+	compileOnly files("libs/android.jar")
+
+	compileOnly files("libs/fabric.jar")
+	compileOnly files("libs/crashlytics.jar")
+
 	compile project(":kotlog")
+}
 
-	provided files("libs/android.jar")
 
-	provided files("libs/fabric.jar")
-	provided files("libs/crashlytics.jar")
+// PUBLISHING
+
+task jar_source(type: Jar) {
+	from sourceSets.main.allSource
 }

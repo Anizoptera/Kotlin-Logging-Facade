@@ -9,10 +9,12 @@ buildscript {
 	}
 	dependencies {
 		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+
+		classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3"
 	}
 }
 
-allprojects {
+subprojects {
 	ext.kotlin_version = rootProject.ext.kotlin_version
 }
 
@@ -29,4 +31,69 @@ dependencies {
 //	compile project(":kotlog-console")
 //	compile project(":kotlog-android")
 //	compile project(":kotlog-slf4j")
+}
+
+
+// PUBLISHING
+// https://docs.gradle.org/current/userguide/publishing_maven.html
+// https://github.com/bintray/gradle-bintray-plugin
+
+configure(subprojects.findAll { !it.name.endsWith("_stub") }) { p ->
+	apply plugin: "maven-publish"
+	apply plugin: "com.jfrog.bintray"
+
+	publishing {
+		publications {
+			"$p.name"(MavenPublication) {
+				groupId p.group
+				artifactId p.name
+				version p.version
+
+				from p.components.java
+
+				artifact jar_source {
+					classifier "sources"
+				}
+			}
+		}
+	}
+
+	bintray {
+		user = bintray_user
+		key = bintray_api_key
+		publications = [p.name]
+
+		publish = true // [Default: false] Whether version should be auto published after an upload
+		override = true // [Default: false] Whether to override version artifacts already published
+
+		pkg {
+			repo = "maven"
+			name = p.name
+
+			// Optional params used to create package if it doesn't exist
+			userOrg = "azadev"
+			licenses = ["MIT"]
+			vcsUrl = "https://github.com/Anizoptera/Kotlin-Logging-Facade.git"
+			issueTrackerUrl = "https://github.com/Anizoptera/Kotlin-Logging-Facade/issues"
+			websiteUrl = "https://github.com/Anizoptera/Kotlin-Logging-Facade"
+			publicDownloadNumbers = false
+
+			version {
+				// Dirty hack since we cannot obtain project version inside the "bintray" closure.
+				// TODO: Figure out the workaround.
+				def v = ""
+				switch(p.name) {
+					case "kotlog":          v = "0.8"; break
+					case "kotlog-console":  v = "0.8"; break
+					case "kotlog-android":  v = "0.8"; break
+					case "kotlog-slf4j":    v = "0.8"; break
+					default: throw new IllegalArgumentException("Unknown project: $p.name")
+				}
+				name = v
+
+//				println("$p.name $v")
+//				throw new RuntimeException("")
+			}
+		}
+	}
 }
