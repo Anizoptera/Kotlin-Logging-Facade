@@ -16,6 +16,39 @@ import java.io.*
 import java.util.*
 
 
+/** @see kotlin.jvm.internal.Intrinsics.sanitizeStackTrace */
+fun sanitizeStackTrace(throwable: Throwable, classNameToDrop: String): Throwable {
+	val stackTrace = throwable.stackTrace
+	val size = stackTrace.size
+
+	var lastIntrinsic = -1
+	for (i in 0..size-1)
+		if (classNameToDrop == stackTrace[i].className)
+			lastIntrinsic = i
+
+	val list = Arrays.asList(*stackTrace).subList(lastIntrinsic + 1, size)
+	throwable.stackTrace = list.toTypedArray()
+	return throwable
+}
+
+/** @see timber.log.Timber.Tree.getStackTraceString */
+fun getStackTraceString(throwable: Throwable): String {
+	val sw = StringWriter(512)
+	sw.appendStackTrace(throwable)
+	val stack: String? = sw.toString()
+	return if (stack != null && stack.isNotEmpty()) stack else
+		(throwable.cause ?: throwable).toString()
+}
+
+fun Writer.appendStackTrace(throwable: Throwable) {
+	val pw = PrintWriter(this, false)
+	@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+	(throwable as java.lang.Throwable).printStackTrace(pw)
+	pw.flush()
+}
+
+
+
 inline fun Any.logRaw(level: Int, msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, level, msgFunction)
 inline fun Any.logRaw(ex: Throwable, level: Int, msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, level, ex, msgFunction)
 @JvmName("log") fun Any.logRaw(msg: CharSequence, level: Int) = LOGGING_ADAPTER.log(this, level, msg)
@@ -87,33 +120,79 @@ inline fun Any.logWtf(ex: Throwable, msgFunction: () -> CharSequence) = LOGGING_
 @JvmName("wtf") fun Any.logWtf(msg: CharSequence, ex: Throwable?) = LOGGING_ADAPTER.log(this, ASSERT, msg, ex)
 
 
-/** @see kotlin.jvm.internal.Intrinsics.sanitizeStackTrace */
-fun sanitizeStackTrace(throwable: Throwable, classNameToDrop: String): Throwable {
-	val stackTrace = throwable.stackTrace
-	val size = stackTrace.size
+/**
+ * Interface that duplicates all the log-methods.
+ * Helps to preserve a proper receiver during logging:
+ * extend your class with this interface, and all the log-calls will be
+ * made using your class as a receiver, even if these log-calls are made
+ * inside a lambda having its own receiver object (see README.txt for examples).
+ */
+interface Logging
+{
+	fun logRaw(level: Int, msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, level, msgFunction)
+	fun logRaw(ex: Throwable, level: Int, msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, level, ex, msgFunction)
+	fun logRaw(msg: CharSequence, level: Int) = LOGGING_ADAPTER.log(this, level, msg)
+	fun logRaw(ex: Throwable, level: Int) = LOGGING_ADAPTER.log(this, level, null, ex)
+	fun logRaw(msg: CharSequence, level: Int, ex: Throwable?) = LOGGING_ADAPTER.log(this, level, msg, ex)
 
-	var lastIntrinsic = -1
-	for (i in 0..size-1)
-		if (classNameToDrop == stackTrace[i].className)
-			lastIntrinsic = i
 
-	val list = Arrays.asList(*stackTrace).subList(lastIntrinsic + 1, size)
-	throwable.stackTrace = list.toTypedArray()
-	return throwable
-}
+	fun logTrace(msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, TRACE, msgFunction)
+	fun logTrace(ex: Throwable, msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, TRACE, ex, msgFunction)
+	fun logTrace(msg: CharSequence) = LOGGING_ADAPTER.log(this, TRACE, msg)
+	fun logTrace(ex: Throwable) = LOGGING_ADAPTER.log(this, TRACE, null, ex)
+	fun logTrace(msg: CharSequence, ex: Throwable?) = LOGGING_ADAPTER.log(this, TRACE, msg, ex)
 
-/** @see timber.log.Timber.Tree.getStackTraceString */
-fun getStackTraceString(throwable: Throwable): String {
-	val sw = StringWriter(512)
-	sw.appendStackTrace(throwable)
-	val stack: String? = sw.toString()
-	return if (stack != null && stack.isNotEmpty()) stack else
-		(throwable.cause ?: throwable).toString()
-}
 
-fun Writer.appendStackTrace(throwable: Throwable) {
-	val pw = PrintWriter(this, false)
-	@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-	(throwable as java.lang.Throwable).printStackTrace(pw)
-	pw.flush()
+	fun logVerbose(msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, VERBOSE, msgFunction)
+	fun logVerbose(ex: Throwable, msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, VERBOSE, ex, msgFunction)
+	fun logVerbose(msg: CharSequence) = LOGGING_ADAPTER.log(this, VERBOSE, msg)
+	fun logVerbose(ex: Throwable) = LOGGING_ADAPTER.log(this, VERBOSE, null, ex)
+	fun logVerbose(msg: CharSequence, ex: Throwable?) = LOGGING_ADAPTER.log(this, VERBOSE, msg, ex)
+
+
+	fun logDebug(msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, DEBUG, msgFunction)
+	fun logDebug(ex: Throwable, msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, DEBUG, ex, msgFunction)
+	fun logDebug(msg: CharSequence) = LOGGING_ADAPTER.log(this, DEBUG, msg)
+	fun logDebug(ex: Throwable) = LOGGING_ADAPTER.log(this, DEBUG, null, ex)
+	fun logDebug(msg: CharSequence, ex: Throwable?) = LOGGING_ADAPTER.log(this, DEBUG, msg, ex)
+
+
+	fun logConfig(msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, CONFIG, msgFunction)
+	fun logConfig(ex: Throwable, msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, CONFIG, ex, msgFunction)
+	fun logConfig(msg: CharSequence) = LOGGING_ADAPTER.log(this, CONFIG, msg)
+	fun logConfig(ex: Throwable) = LOGGING_ADAPTER.log(this, CONFIG, null, ex)
+	fun logConfig(msg: CharSequence, ex: Throwable?) = LOGGING_ADAPTER.log(this, CONFIG, msg, ex)
+
+
+	fun logInfo(msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, INFO, msgFunction)
+	fun logInfo(ex: Throwable, msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, INFO, ex, msgFunction)
+	fun logInfo(msg: CharSequence) = LOGGING_ADAPTER.log(this, INFO, msg)
+	fun logInfo(ex: Throwable) = LOGGING_ADAPTER.log(this, INFO, null, ex)
+	fun logInfo(msg: CharSequence, ex: Throwable?) = LOGGING_ADAPTER.log(this, INFO, msg, ex)
+
+
+	fun logWarning(msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, WARN, msgFunction)
+	fun logWarning(ex: Throwable, msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, WARN, ex, msgFunction)
+	fun logWarning(msg: CharSequence) = LOGGING_ADAPTER.log(this, WARN, msg)
+	fun logWarning(ex: Throwable) = LOGGING_ADAPTER.log(this, WARN, null, ex)
+	fun logWarning(msg: CharSequence?, ex: Throwable?) = LOGGING_ADAPTER.log(this, WARN, msg, ex)
+
+
+	fun logError(msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, ERROR, msgFunction)
+	fun logError(ex: Throwable, msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, ERROR, ex, msgFunction)
+	fun logError(msg: CharSequence) = LOGGING_ADAPTER.log(this, ERROR, msg)
+	fun logError(ex: Throwable) = LOGGING_ADAPTER.log(this, ERROR, null, ex)
+	fun logError(msg: CharSequence?, ex: Throwable?) = LOGGING_ADAPTER.log(this, ERROR, msg, ex)
+
+
+	fun logErrorOrThrow(msg: CharSequence) = LOGGING_ADAPTER.logErrorOrThrow(this, msg)
+	fun logErrorOrThrow(ex: Throwable) = LOGGING_ADAPTER.logErrorOrThrow(this, null, ex)
+	fun logErrorOrThrow(msg: CharSequence?, ex: Throwable?) = LOGGING_ADAPTER.logErrorOrThrow(this, msg, ex)
+
+
+	fun logWtf(msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, ASSERT, msgFunction)
+	fun logWtf(ex: Throwable, msgFunction: () -> CharSequence) = LOGGING_ADAPTER.log(this, ASSERT, ex, msgFunction)
+	fun logWtf(ex: Throwable) = LOGGING_ADAPTER.log(this, ASSERT, null, ex)
+	fun logWtf(msg: CharSequence) = LOGGING_ADAPTER.log(this, ASSERT, msg)
+	fun logWtf(msg: CharSequence, ex: Throwable?) = LOGGING_ADAPTER.log(this, ASSERT, msg, ex)
 }
