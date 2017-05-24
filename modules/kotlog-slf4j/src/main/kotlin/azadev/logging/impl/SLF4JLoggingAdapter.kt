@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory
  * Proxies log messages to SLF4J.
  */
 class SLF4JLoggingAdapter(
-		override var level: Int = LogLevel.WARN
+		override var level: Int = LogLevel.ALL
 ) : LoggingAdapter()
 {
 	override fun log(tag: Any?, level: Int, msg: CharSequence?, t: Throwable?, args: Array<out Any>) {
