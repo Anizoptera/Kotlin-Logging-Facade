@@ -8,10 +8,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 
-@Suppress("unused")
-@JvmField var LOGGING_ADAPTER: LoggingAdapter = SLF4JLoggingAdapter()
-
-
 /**
  * Proxies log messages to SLF4J.
  */

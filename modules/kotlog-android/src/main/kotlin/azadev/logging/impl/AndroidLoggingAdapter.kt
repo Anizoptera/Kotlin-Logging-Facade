@@ -9,10 +9,6 @@ import azadev.logging.LogLevel.WARN
 import com.crashlytics.android.Crashlytics
 
 
-@Suppress("unused")
-@JvmField var LOGGING_ADAPTER: LoggingAdapter = AndroidLoggingAdapter()
-
-
 /**
  * Uses [android.util.Log] for logging.
  * Allows to send to Crashlytics (both logs and exceptions).
