@@ -64,7 +64,7 @@ configure(subprojects.findAll { !it.name.endsWith("_stub") }) { p ->
 		publications = [p.name]
 
 		publish = true // [Default: false] Whether version should be auto published after an upload
-		override = true // [Default: false] Whether to override version artifacts already published
+		//override = true // [Default: false] Whether to override version artifacts already published
 
 		pkg {
 			repo = "maven"
@@ -96,4 +96,34 @@ configure(subprojects.findAll { !it.name.endsWith("_stub") }) { p ->
 			}
 		}
 	}
+}
+
+// Publishing tasks (to publish modules separately).
+// To publish all together just use the 'publishToMavenLocal'
+// and 'bintrayUpload' tasks of the root project.
+
+task _publishToMavenLocal_kotlog {
+	dependsOn project(":kotlog").publishToMavenLocal as Task
+}
+task _publishToMavenLocal_kotlog_console {
+	dependsOn project(":kotlog-console").publishToMavenLocal as Task
+}
+task _publishToMavenLocal_kotlog_slf4j {
+	dependsOn project(":kotlog-slf4j").publishToMavenLocal as Task
+}
+task _publishToMavenLocal_kotlog_android {
+	dependsOn project(":kotlog-android").publishToMavenLocal as Task
+}
+
+task _publishToBintray_kotlog {
+	dependsOn project(":kotlog").bintrayUpload as Task
+}
+task _publishToBintray_kotlog_console {
+	dependsOn project(":kotlog-console").bintrayUpload as Task
+}
+task _publishToBintray_kotlog_slf4j {
+	dependsOn project(":kotlog-slf4j").bintrayUpload as Task
+}
+task _publishToBintray_kotlog_android {
+	dependsOn project(":kotlog-android").bintrayUpload as Task
 }
