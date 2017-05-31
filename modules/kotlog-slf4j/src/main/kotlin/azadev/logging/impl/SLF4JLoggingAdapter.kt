@@ -51,7 +51,7 @@ class SLF4JLoggingAdapter(
 				args.isNotEmpty() -> logger.warn(message, *args)
 				else -> logger.warn(message)
 			}
-			in LogLevel.WARN+1..LogLevel.ALL -> when {
+			in LogLevel.WARN+1..LogLevel.OFF-1 -> when {
 				ex != null -> logger.error(message, ex)
 				args.isNotEmpty() -> logger.error(message, *args)
 				else -> logger.error(message)
