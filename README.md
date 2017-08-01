@@ -19,10 +19,10 @@ repositories {
 
 dependencies {
 	// Choose the one you need:
-//	compile "azadev.logging:kotlog:0.8"
-//	compile "azadev.logging:kotlog-console:0.8"
-//	compile "azadev.logging:kotlog-slf4j:0.8.1"
-//	compile "azadev.logging:kotlog-android:0.8"
+//	compile "azadev.logging:kotlog:0.8.2"
+//	compile "azadev.logging:kotlog-console:0.8.2"
+//	compile "azadev.logging:kotlog-slf4j:0.8.2"
+//	compile "azadev.logging:kotlog-android:0.8.2"
 } 
 ```
 
@@ -30,10 +30,10 @@ You need to uncomment one of the above lines: either the interface, or any adapt
 
 MODULE | DESCRIPTION
 ---- | ----
-`azadev.logging:kotlog:0.8` | The main interface of KotLog. Use it and only it when you're creating a library or some non-standalone project.
-`azadev.logging:kotlog-console:0.8` | Appends log events to `System.out` or `System.err`.
-`azadev.logging:kotlog-slf4j:0.8.1` | Proxies log calls to SLF4J. For Kotlin developers it provides much more friendly API than SLF4J does.
-`azadev.logging:kotlog-android:0.8` | Uses `android.util.Log` as the logging implementation. Has ability to log and send exceptions to Crashlytics as well.
+`azadev.logging:kotlog:0.8.2` | The main interface of KotLog. Use it and only it when you're creating a library or some non-standalone project.
+`azadev.logging:kotlog-console:0.8.2` | Appends log events to `System.out` or `System.err`.
+`azadev.logging:kotlog-slf4j:0.8.2` | Proxies log calls to SLF4J. For Kotlin developers it provides much more friendly API than SLF4J does.
+`azadev.logging:kotlog-android:0.8.2` | Uses `android.util.Log` as the logging implementation. Has ability to log and send exceptions to Crashlytics as well.
 
 ## Usage
 
