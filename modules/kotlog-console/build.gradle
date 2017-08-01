@@ -2,13 +2,14 @@ group "azadev.logging"
 version "0.8"
 
 buildscript {
-	ext.has("kotlin_version") || (ext.kotlin_version = "1.1.2")
+	ext.has("kotlin_version_dep") || (ext.kotlin_version_dep = "1.1.0")
 
 	repositories {
 		jcenter()
 	}
 	dependencies {
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+		//noinspection DifferentKotlinGradleVersion
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version_build"
 	}
 }
 
@@ -19,7 +20,8 @@ repositories {
 }
 
 dependencies {
-	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+	//noinspection DifferentStdlibGradleVersion
+	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version_dep"
 
 	compile project(":kotlog")
 }

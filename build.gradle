@@ -2,20 +2,28 @@
 buildscript {
 	// http://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-gradle-plugin
 	// https://plugins.jetbrains.com/plugin/6954-kotlin
-	ext.kotlin_version = "1.1.2"
+
+	// The minimal Kotlin's "stdlib" version suitable for KotLog is 1.1.
+	// We use the very minimal version of "stdlib" not to upgrade the "stdlib" version of the end-user implicitly.
+	ext.kotlin_version_dep = "1.1.0"
+	// But we build using a recent version of compiler,
+	// so the generated code has all the newest optimizations and improvements.
+	ext.kotlin_version_build = "1.1.3-2"
+
 
 	repositories {
 		jcenter()
 	}
 	dependencies {
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+		//noinspection DifferentKotlinGradleVersion
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version_build"
 
 		classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3"
 	}
 }
 
 subprojects {
-	ext.kotlin_version = rootProject.ext.kotlin_version
+	ext.kotlin_version_dep = rootProject.ext.kotlin_version_dep
 }
 
 apply plugin: "kotlin"
@@ -25,7 +33,8 @@ repositories {
 }
 
 dependencies {
-	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+	//noinspection DifferentStdlibGradleVersion
+	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version_dep"
 
 //	compile project(":kotlog")
 //	compile project(":kotlog-console")
